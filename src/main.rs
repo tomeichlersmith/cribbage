@@ -24,9 +24,9 @@ struct Card {
 
 // calculate the score of the input hand
 //     a "hand" in this logic is five-cards along with the flip card
-fn calculate_score(hand : (Card,Card,Card,Card), flip : Card) -> u8 {
+fn calculate_score(the_deck : &[Card; 52], hand : &[usize; 4], flip : usize) {
     let mut score : u8 = 0;
-    
+
     // count flush points
     if hand.0.suit == hand.1.suit && hand.1.suit == hand.2.suit && hand.2.suit == hand.3.suit {
         score += 4;
@@ -37,6 +37,8 @@ fn calculate_score(hand : (Card,Card,Card,Card), flip : Card) -> u8 {
 
 
     // count fifteen points
+    let full_hand = [ hand.0, hand.1, hand.2, hand.3, flip ];
+
 
     // count runs
 
@@ -44,5 +46,78 @@ fn calculate_score(hand : (Card,Card,Card,Card), flip : Card) -> u8 {
 }
 
 fn main() {
-    println!("Hello, world!");
+
+    // the deck
+    const THE_DECK : [Card; 52] = [
+        Card { suit : Suit::Spade, value :  1 },
+        Card { suit : Suit::Spade, value :  2 },
+        Card { suit : Suit::Spade, value :  3 },
+        Card { suit : Suit::Spade, value :  4 },
+        Card { suit : Suit::Spade, value :  5 },
+        Card { suit : Suit::Spade, value :  6 },
+        Card { suit : Suit::Spade, value :  7 },
+        Card { suit : Suit::Spade, value :  8 },
+        Card { suit : Suit::Spade, value :  9 },
+        Card { suit : Suit::Spade, value : 10 },
+        Card { suit : Suit::Spade, value : 11 },
+        Card { suit : Suit::Spade, value : 12 },
+        Card { suit : Suit::Spade, value : 13 },
+        Card { suit : Suit::Club , value :  1 },
+        Card { suit : Suit::Club , value :  2 },
+        Card { suit : Suit::Club , value :  3 },
+        Card { suit : Suit::Club , value :  4 },
+        Card { suit : Suit::Club , value :  5 },
+        Card { suit : Suit::Club , value :  6 },
+        Card { suit : Suit::Club , value :  7 },
+        Card { suit : Suit::Club , value :  8 },
+        Card { suit : Suit::Club , value :  9 },
+        Card { suit : Suit::Club , value : 10 },
+        Card { suit : Suit::Club , value : 11 },
+        Card { suit : Suit::Club , value : 12 },
+        Card { suit : Suit::Club , value : 13 },
+        Card { suit : Suit::Heart, value :  1 },
+        Card { suit : Suit::Heart, value :  2 },
+        Card { suit : Suit::Heart, value :  3 },
+        Card { suit : Suit::Heart, value :  4 },
+        Card { suit : Suit::Heart, value :  5 },
+        Card { suit : Suit::Heart, value :  6 },
+        Card { suit : Suit::Heart, value :  7 },
+        Card { suit : Suit::Heart, value :  8 },
+        Card { suit : Suit::Heart, value :  9 },
+        Card { suit : Suit::Heart, value : 10 },
+        Card { suit : Suit::Heart, value : 11 },
+        Card { suit : Suit::Heart, value : 12 },
+        Card { suit : Suit::Heart, value : 13 },
+        Card { suit : Suit::Diamond, value :  1 },
+        Card { suit : Suit::Diamond, value :  2 },
+        Card { suit : Suit::Diamond, value :  3 },
+        Card { suit : Suit::Diamond, value :  4 },
+        Card { suit : Suit::Diamond, value :  5 },
+        Card { suit : Suit::Diamond, value :  6 },
+        Card { suit : Suit::Diamond, value :  7 },
+        Card { suit : Suit::Diamond, value :  8 },
+        Card { suit : Suit::Diamond, value :  9 },
+        Card { suit : Suit::Diamond, value : 10 },
+        Card { suit : Suit::Diamond, value : 11 },
+        Card { suit : Suit::Diamond, value : 12 },
+        Card { suit : Suit::Diamond, value : 13 },
+    ];
+
+    println!("{} cards", THE_DECK.len());
+    for c in THE_DECK {
+        let suit_name = match c.suit {
+            Suit::Spade => "Spade",
+            Suit::Club  => "Club",
+            Suit::Heart => "Heart",
+            Suit::Diamond => "Diamond"
+        };
+        let val_name = match c.value {
+            1 => String::from("Ace"),
+            11 => String::from("Jack"),
+            12 => String::from("Queen"),
+            13 => String::from("King"),
+            _ => c.value.to_string()
+        };
+        println!("{} of {}s", val_name, suit_name);
+    }
 }
