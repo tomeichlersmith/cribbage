@@ -1,11 +1,18 @@
 
-// The four suits in a standard deck of cards
-#[derive(PartialEq)]
-enum Suit {
-    Spade,
-    Club,
-    Heart,
-    Diamond
+enum CardValue {
+    Ace,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+    Ten,
+    Jack,
+    Queen,
+    King
 }
 
 // A Card is uniquely defined by a suit and a value
@@ -17,9 +24,47 @@ enum Suit {
 //     Since runs make more sense, we store the value
 //     of the card as their run value AND NEED TO REMEMBER
 //     TO ROUND >= 10 down to 10
-struct Card {
-    suit: Suit,
-    value: u8
+impl CardValue {
+    fn fifteen_value(&self) -> u8 {
+        match self {
+            Ace => 1
+            Two => 2,
+            Three => 3,
+            Four => 4,
+            Five => 5,
+            Six => 6,
+            Seven => 7,
+            Eight => 8,
+            Nine => 9,
+            Ten|Jack|Queen|King => 10,
+        }
+    }
+    fn run_value(&self) -> u8 {
+        match self {
+            Ace => 1
+            Two => 2,
+            Three => 3,
+            Four => 4,
+            Five => 5,
+            Six => 6,
+            Seven => 7,
+            Eight => 8,
+            Nine => 9,
+            Ten => 10,
+            Jack => 11,
+            Queen => 12,
+            King => 13
+        }
+    }
+}
+
+// The four suits in a standard deck of cards
+#[derive(PartialEq)]
+enum Card {
+    Spade(CardValue),
+    Club(CardValue),
+    Heart(CardValue),
+    Diamond(CardValue)
 }
 
 // calculate the score of the input hand
@@ -49,6 +94,7 @@ fn main() {
 
     // the deck
     const THE_DECK : [Card; 52] = [
+        Card::Spade(CardValue::Ace),
         Card { suit : Suit::Spade, value :  1 },
         Card { suit : Suit::Spade, value :  2 },
         Card { suit : Suit::Spade, value :  3 },
