@@ -1,4 +1,5 @@
 use crate::card::{
+    Rank,
     Card,
     deck,
 };
@@ -59,7 +60,7 @@ impl Hand {
         }
 
         // player has a Jack matching suit of cut
-        if self.hand.iter().any(|&c| c.suit == cut.suit && c.rank == 'J') {
+        if self.hand.iter().any(|&c| c.suit == cut.suit && c.rank == Rank::Jack) {
             s += 1;
         }
 
@@ -73,7 +74,7 @@ impl Hand {
             for xs in full_hand.iter().cloned().combinations(n) {
                 let mut total = 0;
                 for c in xs {
-                    total += c.value
+                    total += c.value()
                 }
                 if total == 15 {
                     s += 2
@@ -87,7 +88,7 @@ impl Hand {
         // sort hand based off of card rank
         let mut buckets = [0; 13];
         for c in full_hand {
-            let ic : usize = c.mask.try_into().unwrap();
+            let ic : usize = c.mask();
             buckets[ic] += 1
         }
 

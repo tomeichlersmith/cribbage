@@ -12,3 +12,5 @@ path = "src/bin/simple-fives.rs"
 [dependencies]
 itertools = "0.8.2"
 rand = "0.7.3"
+strum = "0.24"
+strum_macros = "0.24"
