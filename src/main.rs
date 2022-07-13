@@ -1,9 +1,10 @@
 
+use cribbage::hand::hand;
 use cribbage::card::Card;
-use cribbage::hand::Show;
-use cribbage::score::*;
+use std::str::FromStr;
 
 fn main() {
-    let h = Show::new(&vec!["2♡", "3♡", "5♡", "T♡"], "5♣");
-    println!("{}" , h.score_fifteens())
+    let h = hand(&vec!["2H", "3H", "5H", "TH"]);
+    let s = h.score(&Card::from_str("5C").unwrap());
+    println!("{} scored {}", h, s);
 }

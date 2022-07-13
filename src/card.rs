@@ -7,12 +7,12 @@ use std::{
 use std::str::FromStr;
 use itertools::Itertools;
 
-// TODO allow ['H', 'S', 'D', 'C']
+// TODO fancy print suits using their UTF-8 symbols
 pub const SUITS: [char; 4] = [
-    '♡',
-    '♠',
-    '♢',
-    '♣',
+    'H',
+    'S',
+    'D',
+    'C',
 ];
 
 pub const RANKS: [char; 13] = [
@@ -30,8 +30,6 @@ pub const RANKS: [char; 13] = [
     'J', //    10,    10,
     'Q', //    10,    11,
     'K', //    10,    12,
-// Ace high:
-//  'A',        1,    13,
 ];
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
@@ -44,11 +42,14 @@ pub struct Card {
 
 impl Card {
     pub fn from_chars(rank: char, suit: char) -> Self {
+        // TODO wrap in Result object
         if !RANKS.contains(&rank) {
             panic!("Invalid `rank`");
         } else if !SUITS.contains(&suit) {
             panic!("Invalid `suit`");
         };
+
+        // unwrap safe since we check for containment above
         let mask = RANKS.iter().position(|x| x == &rank).unwrap() as i32;
         let value = mask + 1;
         let value = match value > 10 {
@@ -65,18 +66,6 @@ impl Card {
 
     pub fn new(s: &str) -> Self {
         Self::from_str(&s).unwrap()
-    }
-
-    pub fn ace_high(&self) -> Self {
-        if self.rank != 'A' {
-            panic!("`rank` != 'A'")
-        }
-        Self {
-            mask: 13,
-            suit: self.suit,
-            rank: self.rank,
-            value: self.value,
-        }
     }
 }
 
@@ -114,154 +103,118 @@ mod tests {
 
     #[test]
     fn test_card_equality_1() {
-        assert_eq!(Card::from_chars('A', '♣'), Card::from_chars('A', '♣'))
+        assert_eq!(Card::from_chars('A', 'C'), Card::from_chars('A', 'C'))
     }
 
     #[test]
     fn test_card_equality_2() {
-        assert_eq!(Card::from_chars('3', '♡'), Card::from_chars('3', '♡'))
+        assert_eq!(Card::from_chars('3', 'H'), Card::from_chars('3', 'H'))
     }
 
     #[test]
     fn test_card_equality_3() {
-        assert_eq!(Card::from_chars('7', '♠'), Card::from_chars('7', '♠'))
+        assert_eq!(Card::from_chars('7', 'S'), Card::from_chars('7', 'S'))
     }
 
     #[test]
     fn test_card_equality_4() {
-        assert_eq!(Card::from_chars('J', '♢'), Card::from_chars('J', '♢'))
+        assert_eq!(Card::from_chars('J', 'D'), Card::from_chars('J', 'D'))
     }
 
     #[test]
     fn test_card_inequality_1() {
-        assert_ne!(Card::from_chars('A', '♣'), Card::from_chars('A', '♡'))
+        assert_ne!(Card::from_chars('A', 'C'), Card::from_chars('A', 'H'))
     }
 
     #[test]
     fn test_card_inequality_2() {
-        assert_ne!(Card::from_chars('3', '♡'), Card::from_chars('A', '♠'))
+        assert_ne!(Card::from_chars('3', 'H'), Card::from_chars('A', 'S'))
     }
 
     #[test]
     fn test_card_inequality_3() {
-        assert_ne!(Card::from_chars('7', '♠'), Card::from_chars('7', '♢'))
+        assert_ne!(Card::from_chars('7', 'S'), Card::from_chars('7', 'D'))
     }
 
     #[test]
     fn test_card_inequality_4() {
-        assert_ne!(Card::from_chars('J', '♢'), Card::from_chars('J', '♣'))
+        assert_ne!(Card::from_chars('J', 'D'), Card::from_chars('J', 'C'))
     }
 
     #[test]
     fn test_card_rank() {
-        assert_eq!(Card::from_chars('A', '♣').rank, 'A')
+        assert_eq!(Card::from_chars('A', 'C').rank, 'A')
     }
 
     #[test]
     fn test_card_suit() {
-        assert_eq!(Card::from_chars('A', '♣').suit, '♣')
+        assert_eq!(Card::from_chars('A', 'C').suit, 'C')
     }
 
     #[test]
     fn test_card_mask_1() {
-        assert_eq!(Card::from_chars('A', '♣').mask, 0)
+        assert_eq!(Card::from_chars('A', 'C').mask, 0)
     }
 
     #[test]
     fn test_card_mask_2() {
-        assert_eq!(Card::from_chars('3', '♣').mask, 2)
+        assert_eq!(Card::from_chars('3', 'C').mask, 2)
     }
 
     #[test]
     fn test_card_mask_3() {
-        assert_eq!(Card::from_chars('K', '♣').mask, 12)
-    }
-
-    #[test]
-    fn test_card_mask_ace_high() {
-        assert_eq!(Card::from_chars('A', '♣').ace_high().mask, 13)
+        assert_eq!(Card::from_chars('K', 'C').mask, 12)
     }
 
     #[test]
     fn test_card_ordering_1() {
-        assert_eq!(Card::from_chars('A', '♣') < Card::from_chars('3', '♣'), true)
+        assert_eq!(Card::from_chars('A', 'C') < Card::from_chars('3', 'C'), true)
     }
 
     #[test]
     fn test_card_ordering_2() {
-        assert_eq!(Card::from_chars('A', '♣') < Card::from_chars('3', '♡'), true)
+        assert_eq!(Card::from_chars('A', 'C') < Card::from_chars('3', 'H'), true)
     }
 
     #[test]
     fn test_card_ordering_3() {
-        assert_eq!(Card::from_chars('A', '♡') < Card::from_chars('A', '♣'), true)
+        assert_eq!(Card::from_chars('A', 'H') < Card::from_chars('A', 'C'), false)
     }
 
     #[test]
     fn test_card_ordering_4() {
-        assert_eq!(Card::from_chars('A', '♡') < Card::from_chars('A', '♢'), true)
+        assert_eq!(Card::from_chars('A', 'H') < Card::from_chars('A', 'D'), false)
     }
 
     #[test]
     fn test_card_ordering_5() {
-        assert_eq!(Card::from_chars('A', '♢') < Card::from_chars('A', '♣'), true)
+        assert_eq!(Card::from_chars('A', 'D') < Card::from_chars('A', 'C'), false)
     }
 
     #[test]
     fn test_card_ordering_6() {
-        assert_eq!(Card::from_chars('A', '♠') < Card::from_chars('A', '♢'), true)
-    }
-
-    #[test]
-    fn test_card_ordering_ace_high_1() {
-        assert_eq!(Card::from_chars('A', '♣') < Card::from_chars('A', '♣').ace_high(), true)
-    }
-
-    #[test]
-    fn test_card_ordering_ace_high_2() {
-        assert_eq!(Card::from_chars('A', '♣') < Card::from_chars('A', '♠').ace_high(), true)
-    }
-
-    #[test]
-    fn test_card_ordering_ace_high_3() {
-        assert_eq!(Card::from_chars('A', '♣').ace_high() > Card::from_chars('A', '♣'), true)
-    }
-
-    #[test]
-    fn test_card_ordering_ace_high_4() {
-        assert_eq!(Card::from_chars('A', '♠').ace_high() > Card::from_chars('A', '♣'), true)
+        assert_eq!(Card::from_chars('A', 'S') < Card::from_chars('A', 'D'), false)
     }
 
     #[test]
     fn test_card_to_string_1() {
-        assert_eq!(Card::from_chars('A', '♠').to_string(), "A♠")
+        assert_eq!(Card::from_chars('A', 'S').to_string(), "AS")
     }
 
     #[test]
     fn test_card_to_string_2() {
-        assert_eq!(Card::from_chars('K', '♡').to_string(), "K♡")
-    }
-
-    #[test]
-    fn test_card_ace_high_1() {
-        Card::from_chars('A', '♡').ace_high();
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_card_ace_high_2() {
-        Card::from_chars('K', '♡').ace_high();
+        assert_eq!(Card::from_chars('K', 'H').to_string(), "KH")
     }
 
     #[test]
     fn test_card_from_str_1() {
-        assert_eq!(Card::from_str("A♡").unwrap(), Card::from_chars('A', '♡'))
+        assert_eq!(Card::from_str("AH").unwrap(), Card::from_chars('A', 'H'))
     }
 
     #[test]
     #[should_panic]
     fn test_card_from_str_2() {
-        Card::from_str("A♡X").unwrap();
+        Card::from_str("AHX").unwrap();
     }
 
     #[test]
