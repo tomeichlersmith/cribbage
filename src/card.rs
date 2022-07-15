@@ -3,8 +3,6 @@ use std::{
     str,
 };
 use std::str::FromStr;
-use itertools::Itertools;
-use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, EnumIter)]
@@ -158,13 +156,6 @@ impl Card {
     }
 }
 
-pub fn deck() -> Vec<Card> {
-    Rank::iter()
-        .cartesian_product(Suit::iter())
-        .map(|(r, s)| Card { rank : r, suit : s })
-        .collect()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,8 +182,4 @@ mod tests {
         Card::from_str("A").unwrap();
     }
 
-    #[test]
-    fn test_deck_1() {
-        assert_eq!(deck().len(), 52);
-    }
 }

@@ -1,15 +1,5 @@
-use crate::card::{
-    Rank,
-    Card,
-    deck,
-};
-use std::{
-    fmt
-};
-use rand::{
-    thread_rng,
-    seq::SliceRandom, // `choose_multiple`
-};
+use crate::card::{ Rank, Card };
+use std::fmt;
 use itertools::Itertools;
 
 #[derive(Eq, PartialEq, Debug)]
@@ -26,16 +16,6 @@ impl Hand {
             hand: cs
                 .iter()
                 .map(|x| Card::new(x))
-                .collect()
-        }
-    }
-
-    pub fn rand() -> Self {
-        let mut rng = thread_rng();
-        Hand {
-            hand: deck()
-                .choose_multiple(&mut rng, 4)
-                .cloned()
                 .collect()
         }
     }
@@ -148,14 +128,6 @@ mod tests {
     }
 
     #[test]
-    fn test_hand_rand_1() {
-        assert_eq!(
-            Hand::rand().hand.len(),
-            4,
-        );
-    }
-
-    #[test]
     fn test_hand_fn_1() {
         assert_eq!(
             hand(&["2H", "3H", "4H", "5H"]),
@@ -170,4 +142,10 @@ mod tests {
         assert_eq!(s, 14)
     }
 
+    #[test]
+    fn test_score_2() {
+        assert_eq!(
+            hand(&["3H","5C","JH","QH"]).score(&Card::from_str("7H").unwrap()), 
+            5)
+    }
 }

@@ -9,3 +9,4 @@ fn main() {
     let s = h.score(&c);
     println!("{} with cut {} scored {}", h, c, s);
 }
+
