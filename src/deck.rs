@@ -18,7 +18,7 @@ pub fn full_deck() -> Vec<Card> {
 
 // a view of the deck with the input cards removed
 //  (as if they were already drawn)
-pub fn part_deck(already_drawn : &[&Card]) -> Vec<Card> {
+pub fn part_deck(already_drawn : &Vec<Card>) -> Vec<Card> {
     full_deck().iter().filter(|c| !already_drawn.contains(c)).cloned().collect()
 }
 
@@ -45,6 +45,6 @@ mod tests {
 
     #[test]
     fn test_deck_3() {
-        assert_eq!(part_deck(&[&Card::from_str("5H").unwrap()]).len(), 51)
+        assert_eq!(part_deck(&vec![Card::from_str("5H").unwrap()]).len(), 51)
     }
 }

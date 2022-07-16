@@ -186,4 +186,23 @@ mod tests {
         Card::from_str("A").unwrap();
     }
 
+    #[test]
+    fn ten_mask() {
+        assert_eq!(Card::from_str("0C").unwrap().mask(), 9)
+    }
+
+    #[test]
+    fn jack_mask() {
+        assert_eq!(Card::from_str("JC").unwrap().mask(), 10)
+    }
+
+    #[test]
+    fn queen_mask() {
+        assert_eq!(Card::from_str("QC").unwrap().mask(), 11)
+    }
+
+    #[test]
+    fn king_mask() {
+        assert_eq!(Card::from_str("KC").unwrap().mask(), 12)
+    }
 }

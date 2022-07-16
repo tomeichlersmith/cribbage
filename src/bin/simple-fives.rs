@@ -28,8 +28,8 @@ fn main() {
     // maximum if arg not given is 52 * (51 choose 4)
     let tot_hands : u64 = if let Some(max_hands) = args.max_hands { max_hands } else { 12994800 };
     let progbar = indicatif::ProgressBar::new(tot_hands);
-    for cut in full_deck() {
-        for hand in part_deck(&[&cut]).iter().cloned().combinations(4).map(|rs| Hand { hand : rs }) {
+    for hand in full_deck().iter().cloned().combinations(4).map(|cards| Hand { hand : cards }) {
+        for cut in part_deck(&hand.hand) {
             wtr.write_record(&[
                              hand.hand[0].to_string(),
                              hand.hand[1].to_string(),

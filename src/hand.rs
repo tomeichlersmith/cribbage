@@ -66,7 +66,12 @@ impl Hand {
         //  https://codegolf.stackexchange.com/a/5755
 
         // sort hand based off of card rank
-        let mut buckets = [0; 13];
+        //   score tallying only happends when a empty bucket
+        //   is enountered; this means the list of buckets 
+        //   should be one longer than the number of possible
+        //   ranks so that we can catch runs ending with the
+        //   high card (Kings)
+        let mut buckets = [0; 14];
         for c in full_hand {
             let ic : usize = c.mask();
             buckets[ic] += 1
@@ -135,24 +140,37 @@ mod tests {
         );
     }
 
+    fn test_score(h : &[&str], c : &str) -> i32 {
+        hand(h).score(&Card::from_str(c).unwrap())
+    }
+
     #[test]
     fn test_score_flush_fifteens() {
-        assert_eq!(
-            hand(&["2H","3H","5H","TH"]).score(&Card::from_str("5C").unwrap()),
-            14)
+        assert_eq!(test_score(&["2H","3H","5H","TH"],"5C"), 14)
     }
 
     #[test]
     fn test_score_nobs_fifteens() {
-        assert_eq!(
-            hand(&["3H","5C","JH","QH"]).score(&Card::from_str("7H").unwrap()), 
-            7)
+        assert_eq!(test_score(&["3H","5C","JH","QH"],"7H"), 7)
     }
 
     #[test]
     fn test_score_double_run() {
-        assert_eq!(
-            hand(&["3H","4D","4C","5C"]).score(&Card::from_str("7H").unwrap()), 
-            12)
+        assert_eq!(test_score(&["3H","4D","4C","5C"],"7H"), 12)
+    }
+
+    #[test]
+    fn test_low_single_run() {
+        assert_eq!(test_score(&["AH","2C","3D","4D"],"6H"), 6)
+    }
+
+    #[test]
+    fn test_single_run_with_cut() {
+        assert_eq!(test_score(&["AH","2C","3D","6H"],"4H"), 6)
+    }
+
+    #[test]
+    fn test_high_run() {
+        assert_eq!(test_score(&["0C","JD","QC","KH"],"3C"), 4)
     }
 }
