@@ -4,28 +4,34 @@ use crate::card::{
     Suit,
     Card
 };
+//use crate::hand::Hand;
 use strum::IntoEnumIterator;
 use itertools::Itertools;
-use lazy_static::lazy_static;
 
-// the full deck, static list of cards since there is only one full deck
-lazy_static! {
-    static ref THE_DECK : Vec<Card> = Rank::iter()
+// the full deck
+pub fn full_deck() -> Vec<Card> {
+    Rank::iter()
         .cartesian_product(Suit::iter())
         .map(|(r,s)| Card { rank : r, suit : s })
-        .collect();
+        .collect()
 }
 
-// return a reference to the full deck
-pub fn full_deck() -> &'static Vec<Card> {
-    &THE_DECK
+// a view of the deck with the input cards removed
+//  (as if they were already drawn)
+pub fn part_deck(already_drawn : &[&Card]) -> Vec<Card> {
+    full_deck().iter().filter(|c| !already_drawn.contains(c)).cloned().collect()
 }
 
-// a view of the deck with the optionally input
-//  cards excluded from it (as if they were already drawn)
-pub fn part_deck(already_drawn : &[&Card]) -> Vec<&'static Card> {
-    THE_DECK.iter().filter(|c| !already_drawn.contains(c)).collect()
-}
+// deal cards in groups of N with the input cards removed
+//pub fn deal(already_drawn : &[&Card], hand_size : usize) -> Vec<Card> {
+//    full_deck()
+//        .iter()
+//        .filter(|c| !already_drawn.contains(c))
+//        .combinations(hand_size)
+//        .cloned()
+//        .map(|rs| Hand {hand: rs})
+//        .collect()
+//}
 
 #[cfg(test)]
 mod tests {

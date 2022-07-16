@@ -4,10 +4,50 @@ use cribbage::deck::{full_deck, part_deck};
 use cribbage::hand::Hand;
 use itertools::Itertools;
 
+use clap::Parser;
+
+/// calculate score of all five-card hands in a deck
+#[derive(Parser,Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// maximum number of hands
+    #[clap(short, long, value_parser)]
+    max_hands : Option<u64>,
+
+    /// output file to write data to in CSV format
+    #[clap(short, long, value_parser)]
+    output_path : String
+}
+
 fn main() {
-    for (icut, cut) in full_deck().iter().enumerate() {
-        for hand in part_deck(&[cut]).iter().cloned().combinations(4).map(|rs| Hand { hand : rs }) {
-            println!("{} with cut {} scored {}", hand, cut, hand.score(cut));
+    let args = Args::parse();
+
+    let mut wtr = csv::Writer::from_path(args.output_path).expect("Writable file for output data.");
+    wtr.write_record(&["hand0","hand1","hand2","hand3","cut","score"]).expect("unable to write to csv");
+
+    let tot_hands : u64 = if let Some(max_hands) = args.max_hands { max_hands } else { 14077700 };
+    let progbar = indicatif::ProgressBar::new(tot_hands);
+
+    let mut num_hands = 0;
+    for cut in full_deck() {
+        for hand in part_deck(&[&cut]).iter().cloned().combinations(4).map(|rs| Hand { hand : rs }) {
+            wtr.write_record(&[
+                             hand.hand[0].to_string(),
+                             hand.hand[1].to_string(),
+                             hand.hand[2].to_string(),
+                             hand.hand[3].to_string(),
+                             cut.to_string(),
+                             hand.score(&cut).to_string()
+            ]).expect("unable to write to csv");
+            num_hands += 1;
+            progbar.inc(1);
+            if let Some(max_hands) = args.max_hands {
+                if num_hands >= max_hands {
+                    progbar.finish();
+                    return;
+                }
+            }
         }
     }
+    progbar.finish();
 }
