@@ -130,6 +130,10 @@ impl FromStr for Card {
         if s.chars().count() != 2 {
             return Err("Number of characters in `s` != 2");
         };
+        // this is not _super_ good Rust and will panic if we get 
+        // some valid UTF-8 string that is two characters but one
+        // "grapheme cluster", I am choosing to ignore this possibility
+        // at the moment (See Section 8.2 of The Book)
         let the_rank = Rank::from_str(&s[0..1])?;
         let the_suit = Suit::from_str(&s[1..2])?;
         Ok(Card { suit : the_suit, rank : the_rank })
