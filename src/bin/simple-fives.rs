@@ -23,9 +23,10 @@ fn main() {
     let args = Args::parse();
 
     let mut wtr = csv::Writer::from_path(args.output_path).expect("Writable file for output data.");
-    wtr.write_record(&["hand0","hand1","hand2","hand3","cut","score"]).expect("unable to write to csv");
+    wtr.write_record(&["hand0","hand1","hand2","hand3","cut","score"]).expect("able to write to csv");
 
-    let tot_hands : u64 = if let Some(max_hands) = args.max_hands { max_hands } else { 14077700 };
+    // maximum if arg not given is 52 * (51 choose 4)
+    let tot_hands : u64 = if let Some(max_hands) = args.max_hands { max_hands } else { 12994800 };
     let progbar = indicatif::ProgressBar::new(tot_hands);
 
     let mut num_hands = 0;
@@ -38,7 +39,7 @@ fn main() {
                              hand.hand[3].to_string(),
                              cut.to_string(),
                              hand.score(&cut).to_string()
-            ]).expect("unable to write to csv");
+            ]).expect("able to write to csv");
             num_hands += 1;
             progbar.inc(1);
             if let Some(max_hands) = args.max_hands {
