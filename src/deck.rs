@@ -36,19 +36,15 @@ pub fn part_deck(already_drawn : &[&Card]) -> Vec<Card> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_deck_1() {
-        assert_eq!(THE_DECK.len(), 52);
-    }
-
-    #[test]
-    fn test_deck_2() {
-        assert_eq!(deck(None), 52);
+        assert_eq!(full_deck().len(), 52);
     }
 
     #[test]
     fn test_deck_3() {
-        assert_eq!(deck(&[Card::from_str("5H")]).len(), 51)
+        assert_eq!(part_deck(&[&Card::from_str("5H").unwrap()]).len(), 51)
     }
 }

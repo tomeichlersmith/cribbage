@@ -29,7 +29,7 @@ impl Hand {
         let mut s : i32 = 0;
 
         // flush
-        if ! self.hand.iter().any(|&c| c.suit != self.hand[0].suit) {
+        if self.hand.iter().all(|&c| c.suit == self.hand[0].suit) {
             // there are no cards in the hand that have a different suit than the first card,
             //  ==> four card flush
             s += 4;
@@ -136,16 +136,23 @@ mod tests {
     }
 
     #[test]
-    fn test_score_1() {
-        let h = hand(&["2H", "3H", "5H", "TH"]);
-        let s = h.score(&Card::from_str("5C").unwrap());
-        assert_eq!(s, 14)
+    fn test_score_flush_fifteens() {
+        assert_eq!(
+            hand(&["2H","3H","5H","TH"]).score(&Card::from_str("5C").unwrap()),
+            14)
     }
 
     #[test]
-    fn test_score_2() {
+    fn test_score_nobs_fifteens() {
         assert_eq!(
             hand(&["3H","5C","JH","QH"]).score(&Card::from_str("7H").unwrap()), 
-            5)
+            7)
+    }
+
+    #[test]
+    fn test_score_double_run() {
+        assert_eq!(
+            hand(&["3H","4D","4C","5C"]).score(&Card::from_str("7H").unwrap()), 
+            12)
     }
 }
