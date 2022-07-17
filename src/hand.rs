@@ -2,12 +2,21 @@ use crate::card::{ Rank, Card };
 use std::fmt;
 use itertools::Itertools;
 
+/// a scorable hand of cards
+///
+/// In cribbage, hands that can score points consist
+/// of four cards held by a player and the "cut" card
+/// revealed after hands are dealt and the crib cards are
+/// chosen. This struct holds the four cards that a player
+/// holds in their hand (and thus a cut card must be given
+/// in order to calculate a score).
 #[derive(Eq, PartialEq, Debug)]
 pub struct Hand {
     pub hand: Vec<Card>,
 }
 
 impl Hand {
+    /// construct a new hand from a list of strings
     pub fn new(cs: &[&str]) -> Self {
         if cs.len() != 4 {
             panic!("`Hand` must contain four `Card`s")
@@ -20,11 +29,24 @@ impl Hand {
         }
     }
 
-    // this is where we score a hand given a specific cut card
-    //
-    // TODO
-    //  - optional cut? for potential optimization where player is trying
-    //    to decide which four cards to use
+    /// this is where we score a hand given a specific cut card
+    ///
+    /// Points are scored in many different ways:
+    /// - Four Card Flush: If the four cards in the hand are the same suit,
+    ///     the player scores four points
+    /// - Five Card Flush: If the player has a Four Card Flush and the cut 
+    ///     is the same suit, then the player scores an additional point.
+    /// - Nobs: The player scores a point if they have the Jack of the
+    ///     same suit as the cut card
+    /// - Fifteens: The player scores two points for all combinations of
+    ///     cards whose values sum to 15 (face cards are all 10).
+    /// - Runs: The player scores a point for each card participating in
+    ///     a run of three or more cards (face cards maintain their rank).
+    /// - Pairs: The player scores two points for all pairs of cards
+    ///     with the same value.
+    ///
+    /// For Fifteens, Runs, and Pairs, the cut and the player's hand cards
+    /// are all treated the same way.
     pub fn score(&self, cut : &Card) -> i32 {
         let mut s : i32 = 0;
 
@@ -105,11 +127,13 @@ impl Hand {
 }
 
 impl fmt::Display for Hand {
+    /// print the string form of the hand
     fn fmt(&self, f : &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[{} {} {} {}]", self.hand[0], self.hand[1], self.hand[2], self.hand[3])
     }
 }
 
+/// helper function for creating a hand from a slice of strings
 pub fn hand(cs: &[&str]) -> Hand {
     Hand::new(cs)
 }
@@ -172,5 +196,10 @@ mod tests {
     #[test]
     fn test_high_run() {
         assert_eq!(test_score(&["0C","JD","QC","KH"],"3C"), 4)
+    }
+
+    #[test]
+    fn test_triple_run() {
+        assert_eq!(test_score(&["QC","KS","KD","JD"],"KC"), 15)
     }
 }
