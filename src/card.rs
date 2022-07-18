@@ -5,6 +5,7 @@ use std::{
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
+/// the four suits a card can have
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, EnumIter)]
 pub enum Suit {
     Heart,
@@ -15,6 +16,14 @@ pub enum Suit {
 
 impl FromStr for Suit {
     type Err = &'static str;
+    /// convert a string into a suit
+    ///
+    /// the possible strings are the first letter of the
+    /// suit names (H, S, D, and C) case insensitive.
+    ///
+    /// We could think about expanding this to the UTF-8
+    /// symbols for these suits but I don't think that's
+    /// important right now
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "H"|"h" => Ok(Suit::Heart),
@@ -27,6 +36,7 @@ impl FromStr for Suit {
 }
 
 impl fmt::Display for Suit {
+    /// convert a suit into its string representation
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", match self {
             Suit::Heart => "H",
@@ -37,6 +47,7 @@ impl fmt::Display for Suit {
     }
 }
 
+/// the rank a card can have
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, EnumIter)]
 pub enum Rank {
     Ace = 0,
@@ -96,10 +107,22 @@ impl fmt::Display for Rank {
     }
 }
 
+/// the rank of a card converted into a usize
+///
+/// this is helpful for calculating runs and pairs
+/// so we can simply use the rank as an index in
+/// an array
+///
+/// The implementation here is a simple cast so it
+/// depends on the declaration order in the original
+/// enum
 fn mask(r : &Rank) -> usize {
     *r as usize
 }
 
+/// the value a rank has when calculating fifteens
+///
+/// all face cards have value 10 and Aces are always one
 fn value(r : &Rank) -> i32 {
     match r {
         Rank::Ace => 1,
@@ -118,6 +141,7 @@ fn value(r : &Rank) -> i32 {
     }
 }
 
+/// a card is a unique combination of suit and rank
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
 pub struct Card {
     pub suit: Suit,
