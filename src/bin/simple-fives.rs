@@ -1,6 +1,6 @@
 // calculate points of all five-card hands possible in the deck
 
-use cribbage::deck::{full_deck, part_deck};
+use cribbage::deck;
 use cribbage::hand::Hand;
 use itertools::Itertools;
 
@@ -28,8 +28,8 @@ fn main() {
     // maximum if arg not given is 52 * (51 choose 4)
     let tot_hands : u64 = if let Some(max_hands) = args.max_hands { max_hands } else { 12994800 };
     let progbar = indicatif::ProgressBar::new(tot_hands);
-    for hand in full_deck().iter().cloned().combinations(4).map(|cards| Hand { hand : cards }) {
-        for cut in part_deck(&hand.hand) {
+    for hand in deck::full().iter().cloned().combinations(4).map(|cards| Hand { hand : cards }) {
+        for cut in deck::part(&hand.hand) {
             wtr.write_record(&[
                              hand.hand[0].to_string(),
                              hand.hand[1].to_string(),

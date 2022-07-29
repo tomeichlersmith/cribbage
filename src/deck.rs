@@ -9,7 +9,8 @@ use strum::IntoEnumIterator;
 use itertools::Itertools;
 
 // the full deck
-pub fn full_deck() -> Vec<Card> {
+#[must_use]
+pub fn full() -> Vec<Card> {
     Rank::iter()
         .cartesian_product(Suit::iter())
         .map(|(r,s)| Card { rank : r, suit : s })
@@ -18,8 +19,9 @@ pub fn full_deck() -> Vec<Card> {
 
 // a view of the deck with the input cards removed
 //  (as if they were already drawn)
-pub fn part_deck(already_drawn : &Vec<Card>) -> Vec<Card> {
-    full_deck().iter().filter(|c| !already_drawn.contains(c)).cloned().collect()
+#[must_use]
+pub fn part(already_drawn : &[Card]) -> Vec<Card> {
+    full().iter().filter(|c| !already_drawn.contains(c)).copied().collect()
 }
 
 // deal cards in groups of N with the input cards removed
@@ -39,12 +41,15 @@ mod tests {
     use std::str::FromStr;
 
     #[test]
-    fn test_deck_1() {
-        assert_eq!(full_deck().len(), 52);
+    fn deck_corect_len() {
+        assert_eq!(full().len(), 52);
     }
 
     #[test]
-    fn test_deck_3() {
-        assert_eq!(part_deck(&vec![Card::from_str("5H").unwrap()]).len(), 51)
+    fn one_drawn_from_deck() {
+        let card_drawn = Card::from_str("5H").unwrap();
+        let one_drawn = part(&[card_drawn.clone()]);
+        assert_eq!(one_drawn.len(), 51);
+        assert!(!one_drawn.contains(&card_drawn));
     }
 }

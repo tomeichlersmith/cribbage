@@ -1,5 +1,6 @@
 use crate::card::{ Rank, Card };
 use std::fmt;
+use std::str::FromStr;
 use itertools::Itertools;
 
 /// a scorable hand of cards
@@ -17,14 +18,13 @@ pub struct Hand {
 
 impl Hand {
     /// construct a new hand from a list of strings
+    #[must_use]
     pub fn new(cs: &[&str]) -> Self {
-        if cs.len() != 4 {
-            panic!("`Hand` must contain four `Card`s")
-        }
+        assert!(cs.len() == 4, "`Hand` must contain four `Card`s");
         Hand {
             hand: cs
                 .iter()
-                .map(|x| Card::new(x))
+                .map(|x| Card::from_str(x).unwrap())
                 .collect()
         }
     }
@@ -47,6 +47,7 @@ impl Hand {
     ///
     /// For Fifteens, Runs, and Pairs, the cut and the player's hand cards
     /// are all treated the same way.
+    #[must_use]
     pub fn score(&self, cut : &Card) -> i32 {
         let mut s : i32 = 0;
 
@@ -73,13 +74,13 @@ impl Hand {
         // count points worth fifteen
         for n in 2..5 {
             // loop through sub combinations of N cards
-            for xs in full_hand.iter().cloned().combinations(n) {
+            for xs in full_hand.iter().copied().combinations(n) {
                 let mut total = 0;
                 for c in xs {
-                    total += c.value()
+                    total += c.value();
                 }
                 if total == 15 {
-                    s += 2
+                    s += 2;
                 }
             }
         }
@@ -96,7 +97,7 @@ impl Hand {
         let mut buckets = [0; 14];
         for c in full_hand {
             let ic : usize = c.mask();
-            buckets[ic] += 1
+            buckets[ic] += 1;
         }
 
         let mut curr_run_len = 0;
@@ -115,14 +116,14 @@ impl Hand {
                     // run longer than 3
                     //  points for this run is length of run
                     //  times number of combos that can make it
-                    s += curr_run_len * curr_run_combos
+                    s += curr_run_len * curr_run_combos;
                 }
                 // reset counters
                 curr_run_len = 0;
                 curr_run_combos = 1;
             }
         }
-        return s
+        s
     }
 }
 
@@ -134,6 +135,7 @@ impl fmt::Display for Hand {
 }
 
 /// helper function for creating a hand from a slice of strings
+#[must_use]
 pub fn hand(cs: &[&str]) -> Hand {
     Hand::new(cs)
 }
@@ -144,12 +146,13 @@ mod tests {
     use std::str::FromStr;
 
     #[test]
-    fn test_hand_constructor_1() {
-        Hand::new(&["2H", "3H", "4H", "5H"]);
+    fn construct_and_print_hand() {
+        let h = Hand::new(&["2H", "3H", "4H", "5H"]);
+        println!("{}",h)
     }
 
     #[test]
-    fn test_hand_equality_1() {
+    fn same_hand() {
         assert_eq!(
             Hand::new(&vec!["2H", "3H", "4H", "5H"]),
             Hand::new(&["2H", "3H", "4H", "5H"]),
