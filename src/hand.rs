@@ -21,7 +21,7 @@ impl Hand {
     #[must_use]
     pub fn new(cs: &[&str]) -> Self {
         assert!(cs.len() == 4, "`Hand` must contain four `Card`s");
-        Hand {
+        Self {
             hand: cs
                 .iter()
                 .map(|x| Card::from_str(x).unwrap())
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn same_hand() {
         assert_eq!(
-            Hand::new(&vec!["2H", "3H", "4H", "5H"]),
+            Hand::new(&["2H", "3H", "4H", "5H"]),
             Hand::new(&["2H", "3H", "4H", "5H"]),
         );
     }
@@ -163,7 +163,7 @@ mod tests {
     fn test_hand_fn_1() {
         assert_eq!(
             hand(&["2H", "3H", "4H", "5H"]),
-            Hand::new(&vec!["2H", "3H", "4H", "5H"]),
+            Hand::new(&["2H", "3H", "4H", "5H"]),
         );
     }
 

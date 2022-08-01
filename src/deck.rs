@@ -48,7 +48,7 @@ mod tests {
     #[test]
     fn one_drawn_from_deck() {
         let card_drawn = Card::from_str("5H").unwrap();
-        let one_drawn = part(&[card_drawn.clone()]);
+        let one_drawn = part(&[card_drawn]);
         assert_eq!(one_drawn.len(), 51);
         assert!(!one_drawn.contains(&card_drawn));
     }

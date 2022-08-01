@@ -26,10 +26,10 @@ impl FromStr for Suit {
     /// important right now
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "H"|"h" => Ok(Suit::Heart),
-            "S"|"s" => Ok(Suit::Spade),
-            "D"|"d" => Ok(Suit::Diamond),
-            "C"|"c" => Ok(Suit::Club),
+            "H"|"h" => Ok(Self::Heart),
+            "S"|"s" => Ok(Self::Spade),
+            "D"|"d" => Ok(Self::Diamond),
+            "C"|"c" => Ok(Self::Club),
             _ => Err("Unrecongized suit")
         }
     }
@@ -39,10 +39,10 @@ impl fmt::Display for Suit {
     /// convert a suit into its string representation
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", match self {
-            Suit::Heart => "H",
-            Suit::Spade => "S",
-            Suit::Diamond => "D",
-            Suit::Club => "C"
+            Self::Heart => "H",
+            Self::Spade => "S",
+            Self::Diamond => "D",
+            Self::Club => "C"
         })
     }
 }
@@ -69,19 +69,19 @@ impl FromStr for Rank {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "A" => Ok(Rank::Ace),
-            "2" => Ok(Rank::Two),
-            "3" => Ok(Rank::Three),
-            "4" => Ok(Rank::Four),
-            "5" => Ok(Rank::Five),
-            "6" => Ok(Rank::Six),
-            "7" => Ok(Rank::Seven),
-            "8" => Ok(Rank::Eight),
-            "9" => Ok(Rank::Nine),
-            "0"|"T" => Ok(Rank::Ten),
-            "J" => Ok(Rank::Jack),
-            "Q" => Ok(Rank::Queen),
-            "K" => Ok(Rank::King),
+            "A" => Ok(Self::Ace),
+            "2" => Ok(Self::Two),
+            "3" => Ok(Self::Three),
+            "4" => Ok(Self::Four),
+            "5" => Ok(Self::Five),
+            "6" => Ok(Self::Six),
+            "7" => Ok(Self::Seven),
+            "8" => Ok(Self::Eight),
+            "9" => Ok(Self::Nine),
+            "0"|"T" => Ok(Self::Ten),
+            "J" => Ok(Self::Jack),
+            "Q" => Ok(Self::Queen),
+            "K" => Ok(Self::King),
             _ => Err("Unknown rank")
         }
     }
@@ -90,19 +90,19 @@ impl FromStr for Rank {
 impl fmt::Display for Rank {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", match self {
-            Rank::Ace => "A",
-            Rank::Two => "2",
-            Rank::Three => "3",
-            Rank::Four => "4",
-            Rank::Five => "5",
-            Rank::Six => "6",
-            Rank::Seven => "7",
-            Rank::Eight => "8",
-            Rank::Nine => "9",
-            Rank::Ten => "0",
-            Rank::Jack => "J",
-            Rank::Queen => "Q",
-            Rank::King => "K"
+            Self::Ace => "A",
+            Self::Two => "2",
+            Self::Three => "3",
+            Self::Four => "4",
+            Self::Five => "5",
+            Self::Six => "6",
+            Self::Seven => "7",
+            Self::Eight => "8",
+            Self::Nine => "9",
+            Self::Ten => "0",
+            Self::Jack => "J",
+            Self::Queen => "Q",
+            Self::King => "K"
         })
     }
 }
@@ -157,7 +157,7 @@ impl FromStr for Card {
         // at the moment (See Section 8.2 of The Book)
         let the_rank = Rank::from_str(&s[0..1])?;
         let the_suit = Suit::from_str(&s[1..2])?;
-        Ok(Card { suit : the_suit, rank : the_rank })
+        Ok(Self { suit : the_suit, rank : the_rank })
     }
 }
 
