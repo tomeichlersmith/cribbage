@@ -116,14 +116,14 @@ impl fmt::Display for Rank {
 /// The implementation here is a simple cast so it
 /// depends on the declaration order in the original
 /// enum
-fn mask(r : Rank) -> usize {
+const fn mask(r : Rank) -> usize {
     r as usize
 }
 
 /// the value a rank has when calculating fifteens
 ///
 /// all face cards have value 10 and Aces are always one
-fn value(r : Rank) -> i32 {
+const fn value(r : Rank) -> i32 {
     match r {
         Rank::Ace => 1,
         Rank::Two => 2,

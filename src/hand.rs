@@ -18,6 +18,10 @@ pub struct Hand {
 
 impl Hand {
     /// construct a new hand from a list of strings
+    ///
+    /// # Panics
+    /// - if the hand is not of the correct size (4 cards)
+    /// - if any of the strings provided cannot be deduced into a Card
     #[must_use]
     pub fn new(cs: &[&str]) -> Self {
         assert!(cs.len() == 4, "`Hand` must contain four `Card`s");
