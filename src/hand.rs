@@ -21,20 +21,30 @@ impl Hand {
     /// construct a new hand from a list of strings
     ///
     /// # Panics
-    /// - if the hand is not of the correct size (4 cards)
     /// - if any of the strings provided cannot be deduced into a Card
     #[must_use]
     pub fn new(cs: &[&str], c : &str) -> Self {
-        assert!(cs.len() == 4, "`Hand` must contain four `Card`s");
-        Self {
-            hand: cs
-                .iter()
-                .map(|x| Card::from_str(x).unwrap())
-                .collect::<Vec<Card>>()
-                .try_into()
-                .unwrap(),
-            cut : Card::from_str(c).unwrap(),
-        }
+        Hand::from_cards(
+            cs.iter().map(|x| Card::from_str(x).unwrap()).collect(),
+            Card::from_str(c).unwrap()
+            )
+    }
+
+    /// construct a new hand from a list of cards
+    ///
+    /// # Panics
+    /// - if the number of cards provided for the hand is not 4
+    #[must_use]
+    pub fn from_cards(h : Vec<Card>, cut : Card) -> Self {
+        assert!(h.len() == 4, "`Hand` must contain four `Card`s");
+        let mut hand : [Card;4] = h.clone().try_into().unwrap();
+        // we need to sort the hand here so that the derived
+        // equality and hashing can work as expected
+        // I don't expect this to be a large performance burden
+        // since there are only four cards which are dictionary
+        // sorted by their two identifying values
+        hand.sort();
+        Self { hand, cut }
     }
 
     /// this is where we score a hand given a specific cut card
@@ -164,6 +174,8 @@ impl std::hash::Hash for Hand {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::hash::{Hash, Hasher};
+    use std::collections::hash_map::DefaultHasher;
 
     #[test]
     fn construct_and_print_hand() {
@@ -177,6 +189,45 @@ mod tests {
             Hand::new(&["2H", "3H", "4H", "5H"],"6H"),
             Hand::new(&["2H", "3H", "4H", "5H"],"6H"),
         );
+    }
+
+    #[test]
+    fn same_hand_diff_order() {
+        assert_eq!(
+            Hand::new(&["2H", "3H", "4H", "5H"],"6H"),
+            Hand::new(&["3H", "2H", "4H", "5H"],"6H"),
+            );
+    }
+
+    fn hash(hand : Hand) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        hand.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    #[test]
+    fn check_hash_same_order() {
+        assert_eq!(
+            hash(Hand::new(&["2H", "3H", "4H", "5H"],"6H")),
+            hash(Hand::new(&["2H", "3H", "4H", "5H"],"6H")),
+            )
+    }
+
+    #[test]
+    fn check_hash_diff_order() {
+        assert_eq!(
+            hash(Hand::new(&["2H", "3H", "4H", "5H"],"6H")),
+            hash(Hand::new(&["3H", "2H", "4H", "5H"],"6H")),
+            )
+    }
+
+    #[test]
+    #[should_panic]
+    fn diff_hash_because_cut() {
+        assert_eq!(
+            hash(Hand::new(&["2H", "3H", "4H", "6H"],"5H")),
+            hash(Hand::new(&["3H", "2H", "4H", "5H"],"6H")),
+            )
     }
 
     fn test_score(h : &[&str], c : &str) -> usize {
