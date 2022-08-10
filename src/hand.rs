@@ -80,7 +80,7 @@ impl Hand {
         full_hand.push(self.cut);
         
         // count points worth fifteen
-        for n in 2..5 {
+        for n in 2..=5 {
             // each subset of cards that total fifteen
             //  is worth 2 points, so we go through all
             //  subsets of cards of length `n`,
