@@ -9,11 +9,12 @@ use itertools::Itertools;
 /// of four cards held by a player and the "cut" card
 /// revealed after hands are dealt and the crib cards are
 /// chosen. This struct holds the four cards that a player
-/// holds in their hand (and thus a cut card must be given
-/// in order to calculate a score).
-#[derive(Eq, PartialEq, Debug)]
+/// holds in their hand (called `hand`) and the card that
+/// was flipped after the deal (called `cut`).
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub struct Hand {
-    pub hand: Vec<Card>,
+    pub hand: [Card;4],
+    pub cut: Card,
 }
 
 impl Hand {
@@ -23,13 +24,16 @@ impl Hand {
     /// - if the hand is not of the correct size (4 cards)
     /// - if any of the strings provided cannot be deduced into a Card
     #[must_use]
-    pub fn new(cs: &[&str]) -> Self {
+    pub fn new(cs: &[&str], c : &str) -> Self {
         assert!(cs.len() == 4, "`Hand` must contain four `Card`s");
         Self {
             hand: cs
                 .iter()
                 .map(|x| Card::from_str(x).unwrap())
-                .collect()
+                .collect::<Vec<Card>>()
+                .try_into()
+                .unwrap(),
+            cut : Card::from_str(c).unwrap(),
         }
     }
 
@@ -51,42 +55,48 @@ impl Hand {
     ///
     /// For Fifteens, Runs, and Pairs, the cut and the player's hand cards
     /// are all treated the same way.
-    #[must_use]
-    pub fn score(&self, cut : &Card) -> i32 {
-        let mut s : i32 = 0;
+    pub fn score(&self) -> usize {
+        // need to calculate score
+        let mut s : usize = 0;
 
         // flush
         if self.hand.iter().all(|&c| c.suit == self.hand[0].suit) {
             // there are no cards in the hand that have a different suit than the first card,
             //  ==> four card flush
             s += 4;
-            if self.hand[0].suit == cut.suit {
+            if self.hand[0].suit == self.cut.suit {
                 // 5 card flush
                 s += 1;
             }
         }
 
         // player has a Jack matching suit of cut
-        if self.hand.iter().any(|&c| c.suit == cut.suit && c.rank == Rank::Jack) {
+        if self.hand.iter().any(|&c| c.suit == self.cut.suit && c.rank == Rank::Jack) {
             s += 1;
         }
 
         // construct full hand for cut-agnostic calculations
-        let mut full_hand = self.hand.clone();
-        full_hand.push(*cut);
+        let mut full_hand = self.hand.to_vec();
+        full_hand.push(self.cut);
         
         // count points worth fifteen
         for n in 2..5 {
-            // loop through sub combinations of N cards
-            for xs in full_hand.iter().copied().combinations(n) {
-                let mut total = 0;
-                for c in xs {
-                    total += c.value();
-                }
-                if total == 15 {
-                    s += 2;
-                }
-            }
+            // each subset of cards that total fifteen
+            //  is worth 2 points, so we go through all
+            //  subsets of cards of length `n`,
+            //  filter out the subsets that total 15,
+            //  and then count them and multiply by 2
+            s += full_hand
+                .iter()
+                .copied()
+                .combinations(n)
+                .filter(|subset| {
+                    subset
+                        .iter()
+                        .map(|c| c.value())
+                        .sum::<i32>() == 15
+                })
+                .count() * 2;
         }
 
         // run/pair scoring taken from a post on Code Golf:
@@ -100,8 +110,7 @@ impl Hand {
         //   high card (Kings)
         let mut buckets = [0; 14];
         for c in full_hand {
-            let ic : usize = c.mask();
-            buckets[ic] += 1;
+            buckets[c.mask()] += 1;
         }
 
         let mut curr_run_len = 0;
@@ -134,79 +143,133 @@ impl Hand {
 impl fmt::Display for Hand {
     /// print the string form of the hand
     fn fmt(&self, f : &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{} {} {} {}]", self.hand[0], self.hand[1], self.hand[2], self.hand[3])
+        write!(f, "[{} {} {} {}] {}", self.hand[0], self.hand[1], self.hand[2], self.hand[3], self.cut)
     }
 }
 
-/// helper function for creating a hand from a slice of strings
-#[must_use]
-pub fn hand(cs: &[&str]) -> Hand {
-    Hand::new(cs)
+impl std::hash::Hash for Hand {
+    /// hashing a hand is simply hashing all the cards
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: std::hash::Hasher,
+    {
+        self.cut.hash(state);
+        for c in self.hand {
+            c.hash(state);
+        }
+        state.finish();
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::str::FromStr;
 
     #[test]
     fn construct_and_print_hand() {
-        let h = Hand::new(&["2H", "3H", "4H", "5H"]);
+        let h = Hand::new(&["2H", "3H", "4H", "5H"],"6H");
         println!("{}",h)
     }
 
     #[test]
     fn same_hand() {
         assert_eq!(
-            Hand::new(&["2H", "3H", "4H", "5H"]),
-            Hand::new(&["2H", "3H", "4H", "5H"]),
+            Hand::new(&["2H", "3H", "4H", "5H"],"6H"),
+            Hand::new(&["2H", "3H", "4H", "5H"],"6H"),
         );
     }
 
-    #[test]
-    fn test_hand_fn_1() {
-        assert_eq!(
-            hand(&["2H", "3H", "4H", "5H"]),
-            Hand::new(&["2H", "3H", "4H", "5H"]),
-        );
-    }
-
-    fn test_score(h : &[&str], c : &str) -> i32 {
-        hand(h).score(&Card::from_str(c).unwrap())
+    fn test_score(h : &[&str], c : &str) -> usize {
+        Hand::new(h,c).score()
     }
 
     #[test]
-    fn test_score_flush_fifteens() {
+    fn five_flush_only() {
+        assert_eq!(test_score(&["2H","4H","6H","8H"],"0H"), 5);
+    }
+
+    #[test]
+    fn four_flush_only() {
+        assert_eq!(test_score(&["2H","4H","6H","8H"],"0C"), 4);
+    }
+
+    #[test]
+    fn score_flush_fifteens() {
         assert_eq!(test_score(&["2H","3H","5H","TH"],"5C"), 14)
     }
 
     #[test]
-    fn test_score_nobs_fifteens() {
+    fn score_nobs_fifteens() {
         assert_eq!(test_score(&["3H","5C","JH","QH"],"7H"), 7)
     }
 
     #[test]
-    fn test_score_double_run() {
+    fn score_double_run() {
         assert_eq!(test_score(&["3H","4D","4C","5C"],"7H"), 12)
     }
 
     #[test]
-    fn test_low_single_run() {
+    fn low_single_run() {
         assert_eq!(test_score(&["AH","2C","3D","4D"],"6H"), 6)
     }
 
     #[test]
-    fn test_single_run_with_cut() {
+    fn single_run_with_cut() {
         assert_eq!(test_score(&["AH","2C","3D","6H"],"4H"), 6)
     }
 
     #[test]
-    fn test_high_run() {
+    fn high_run() {
         assert_eq!(test_score(&["0C","JD","QC","KH"],"3C"), 4)
     }
 
     #[test]
-    fn test_triple_run() {
+    fn triple_run() {
         assert_eq!(test_score(&["QC","KS","KD","JD"],"KC"), 15)
+    }
+
+    #[test]
+    fn low_triple_run() {
+        assert_eq!(test_score(&["AH","AD","AC","2C"],"3C"), 15)
+    }
+    
+    #[test]
+    fn double_double_run() {
+        assert_eq!(test_score(&["AH","AD","3C","2C"],"3D"), 16)
+    }
+
+    #[test]
+    fn double_double_run_with_nobs() {
+        assert_eq!(test_score(&["JD","QC","KC","KD"],"QD"), 17);
+    }
+
+    #[test]
+    fn triple_run_with_fifteen() {
+        assert_eq!(test_score(&["3H","4D","4H","5C"],"4C"), 17);
+    }
+
+    #[test]
+    fn fifteens_run_and_nobs() {
+        assert_eq!(test_score(&["5H","5C","0C","JH"],"QH"),18);
+    }
+
+    #[test]
+    fn fifteens_run_and_nonobs() {
+        assert_eq!(test_score(&["5H","5C","0C","QH"],"JH"),17);
+    }
+
+    #[test]
+    fn low_triple_run_2() {
+        assert_eq!(test_score(&["AH","2C","3H","3C"],"3D"), 15);
+    }
+
+    #[test]
+    fn fifteens_run_and_nonobs_2() {
+        assert_eq!(test_score(&["3H","4C","4H","5C"],"4D"), 17);
+    }
+
+    #[test]
+    fn five_card_fifteen() {
+        assert_eq!(test_score(&["AC","2H","3H","4D"],"5C"),7);
     }
 }

@@ -47,6 +47,17 @@ impl fmt::Display for Suit {
     }
 }
 
+impl std::hash::Hash for Suit {
+    fn hash<H: std::hash::Hasher>(&self, state : &mut H) {
+        match *self {
+            Suit::Heart => state.write_u8(0),
+            Suit::Spade => state.write_u8(1),
+            Suit::Diamond => state.write_u8(2),
+            Suit::Club => state.write_u8(3),
+        }
+    }
+}
+
 /// the rank a card can have
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, EnumIter)]
 pub enum Rank {
@@ -107,6 +118,12 @@ impl fmt::Display for Rank {
     }
 }
 
+impl std::hash::Hash for Rank {
+    fn hash<H : std::hash::Hasher>(&self, state: &mut H) {
+        state.write_usize(mask(*self));
+    }
+}
+
 /// the rank of a card converted into a usize
 ///
 /// this is helpful for calculating runs and pairs
@@ -164,6 +181,13 @@ impl FromStr for Card {
 impl fmt::Display for Card {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}{}", self.rank, self.suit)
+    }
+}
+
+impl std::hash::Hash for Card {
+    fn hash<H : std::hash::Hasher>(&self, state: &mut H) {
+        self.suit.hash(state);
+        self.rank.hash(state);
     }
 }
 

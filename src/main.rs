@@ -1,12 +1,9 @@
 
-use cribbage::hand::hand;
-use cribbage::card::Card;
-use std::str::FromStr;
+use cribbage::hand::Hand;
 
 fn main() {
-    let h = hand(&["2H", "3H", "5H", "TH"]);
-    let c = Card::from_str("5C").unwrap();
-    let s = h.score(&c);
-    println!("{} with cut {} scored {}", h, c, s);
+    let h = Hand::new(&["2H", "3H", "5H", "TH"],"5C");
+    let s = h.score();
+    println!("{} scored {}", h, s);
 }
 

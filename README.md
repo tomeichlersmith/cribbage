@@ -9,3 +9,5 @@ I want to know if there is a definite best strategy and I want to learn some rus
 however, it does not mention counting points from flushes. I still can use it as a good
 point of comparison for making sure my scoring function is working as intended.
 
+[Wikipedia](https://en.wikipedia.org/wiki/Cribbage_statistics) also has a page on cribbage
+statistics which I can use as another point of comparison.
