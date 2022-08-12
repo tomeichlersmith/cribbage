@@ -47,6 +47,74 @@ impl Hand {
         Self { hand, cut }
     }
 
+    /// this is where we score cards that _do not_ have a separate cut
+    ///
+    /// this is helpful for many strategies that pick the cards to keep based
+    /// on which ones are cuts
+    pub fn score_nocut(cards : &Vec<&Card>) -> usize {
+        let mut s : usize = 0;
+
+        // count points worth fifteen
+        for n in 2..=cards.len() {
+            // each subset of cards that total fifteen
+            //  is worth 2 points, so we go through all
+            //  subsets of cards of length `n`,
+            //  filter out the subsets that total 15,
+            //  and then count them and multiply by 2
+            s += cards
+                .iter()
+                .copied()
+                .combinations(n)
+                .filter(|subset| {
+                    subset
+                        .iter()
+                        .map(|c| c.value())
+                        .sum::<i32>() == 15
+                })
+                .count() * 2;
+        }
+
+        // run/pair scoring taken from a post on Code Golf:
+        //  https://codegolf.stackexchange.com/a/5755
+
+        // sort hand based off of card rank
+        //   score tallying only happends when a empty bucket
+        //   is enountered; this means the list of buckets 
+        //   should be one longer than the number of possible
+        //   ranks so that we can catch runs ending with the
+        //   high card (Kings)
+        let mut buckets = [0; 14];
+        for c in cards {
+            buckets[c.mask()] += 1;
+        }
+
+        let mut curr_run_len = 0;
+        let mut curr_run_combos = 1;
+        for b in buckets {
+            if b > 0 {
+                // calculate score of pairs
+                s += b * (b-1);
+                // track number in current run
+                curr_run_len += 1;
+                // track number of different combos
+                // form this run
+                curr_run_combos *= b;
+            } else {
+                if curr_run_len > 2 {
+                    // run longer than 3
+                    //  points for this run is length of run
+                    //  times number of combos that can make it
+                    s += curr_run_len * curr_run_combos;
+                }
+                // reset counters
+                curr_run_len = 0;
+                curr_run_combos = 1;
+            }
+        }
+
+        s
+    }
+
     /// this is where we score a hand given a specific cut card
     ///
     /// Points are scored in many different ways:
@@ -86,67 +154,16 @@ impl Hand {
         }
 
         // construct full hand for cut-agnostic calculations
-        let mut full_hand = self.hand.to_vec();
-        full_hand.push(self.cut);
+        let full_hand = vec![
+            &self.hand[0],
+            &self.hand[1],
+            &self.hand[2],
+            &self.hand[3],
+            &self.cut
+        ];
         
-        // count points worth fifteen
-        for n in 2..=5 {
-            // each subset of cards that total fifteen
-            //  is worth 2 points, so we go through all
-            //  subsets of cards of length `n`,
-            //  filter out the subsets that total 15,
-            //  and then count them and multiply by 2
-            s += full_hand
-                .iter()
-                .copied()
-                .combinations(n)
-                .filter(|subset| {
-                    subset
-                        .iter()
-                        .map(|c| c.value())
-                        .sum::<i32>() == 15
-                })
-                .count() * 2;
-        }
-
-        // run/pair scoring taken from a post on Code Golf:
-        //  https://codegolf.stackexchange.com/a/5755
-
-        // sort hand based off of card rank
-        //   score tallying only happends when a empty bucket
-        //   is enountered; this means the list of buckets 
-        //   should be one longer than the number of possible
-        //   ranks so that we can catch runs ending with the
-        //   high card (Kings)
-        let mut buckets = [0; 14];
-        for c in full_hand {
-            buckets[c.mask()] += 1;
-        }
-
-        let mut curr_run_len = 0;
-        let mut curr_run_combos = 1;
-        for b in buckets {
-            if b > 0 {
-                // calculate score of pairs
-                s += b * (b-1);
-                // track number in current run
-                curr_run_len += 1;
-                // track number of different combos
-                // form this run
-                curr_run_combos *= b;
-            } else {
-                if curr_run_len > 2 {
-                    // run longer than 3
-                    //  points for this run is length of run
-                    //  times number of combos that can make it
-                    s += curr_run_len * curr_run_combos;
-                }
-                // reset counters
-                curr_run_len = 0;
-                curr_run_combos = 1;
-            }
-        }
-        s
+        // add our cut-necessary and cut-agnotstic calculations together
+        s + Self::score_nocut(&full_hand)
     }
 }
 
