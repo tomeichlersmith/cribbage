@@ -24,8 +24,8 @@ impl Hand {
     /// - if any of the strings provided cannot be deduced into a Card
     #[must_use]
     pub fn new(cs: &[&str], c : &str) -> Self {
-        Hand::from_cards(
-            cs.iter().map(|x| Card::from_str(x).unwrap()).collect(),
+        let cards : Vec<Card> = cs.iter().map(|x| Card::from_str(x).unwrap()).collect();
+        Hand::from_cards(&cards,
             Card::from_str(c).unwrap()
             )
     }
@@ -35,7 +35,7 @@ impl Hand {
     /// # Panics
     /// - if the number of cards provided for the hand is not 4
     #[must_use]
-    pub fn from_cards(h : Vec<Card>, cut : Card) -> Self {
+    pub fn from_cards(h : &Vec<Card>, cut : Card) -> Self {
         assert!(h.len() == 4, "`Hand` must contain four `Card`s");
         let mut hand : [Card;4] = h.clone().try_into().unwrap();
         // we need to sort the hand here so that the derived

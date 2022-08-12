@@ -42,10 +42,7 @@ pub fn unique_scores() -> HashMap<Hand,usize> {
     let mut lut = HashMap::new();
     for cards in full().iter().copied().combinations(4) {
         for cut in part(&cards) {
-            let hand = Hand {
-                hand : cards.clone().try_into().unwrap(),
-                cut
-            };
+            let hand = Hand::from_cards(&cards, cut);
             lut.insert(hand,hand.score());
         }
     }
